@@ -1,0 +1,6 @@
+*.o
+*.elf
+*.map
+baserom.bin
+mariovsdk-carde-18.bin
+tools/*

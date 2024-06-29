@@ -1,0 +1,10 @@
+OUTPUT_ARCH(arm)
+SECTIONS
+{
+	. = 0x02000000;
+	.text (READONLY) :
+	ALIGN(4)
+	{
+		asm/code.o(.text);
+	} = 0
+}
