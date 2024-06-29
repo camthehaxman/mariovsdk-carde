@@ -1,9 +1,9 @@
 	.INCLUDE "macro.inc"
 
 	.syntax unified
-
-	thumb_func_start main
-main: @ 0x0200000C
+.if 0
+	thumb_func_start AgbMain
+AgbMain: @ 0x0200000C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -252,7 +252,7 @@ _02000250: .4byte gUnknown_02000AE0
 _02000254: .4byte 0x0000021A
 _02000258: .4byte gUnknown_020010B4
 _0200025C: .4byte 0x00000301
-
+.endif
 	thumb_func_start sub_02000260
 sub_02000260: @ 0x02000260
 	push {r4, r5, r6, r7, lr}
