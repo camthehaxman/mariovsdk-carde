@@ -252,7 +252,7 @@ _02000250: .4byte gUnknown_02000AE0
 _02000254: .4byte 0x0000021A
 _02000258: .4byte gUnknown_020010B4
 _0200025C: .4byte 0x00000301
-.endif
+
 	thumb_func_start sub_02000260
 sub_02000260: @ 0x02000260
 	push {r4, r5, r6, r7, lr}
@@ -298,19 +298,19 @@ sub_02000260: @ 0x02000260
 	str r0, [r4, #0x2c]
 	movs r3, #0
 	adds r5, r4, #0
-	adds r5, #0xc0
+	adds r5, #0xc0      @ unkC0
 	movs r2, #0
 	movs r7, #0x30
-	adds r7, r7, r4
-	mov r8, r7
+	adds r7, r7, r4 
+	mov r8, r7     @unk30
 	movs r0, #0x90
-	adds r0, r0, r4
-	mov ip, r0
+	adds r0, r0, r4 
+	mov ip, r0		@ unk90
 	adds r6, r4, #0
-	adds r6, #0xa8
+	adds r6, #0xa8  @ unkA8
 	movs r7, #0x40
 	adds r7, r7, r4
-	mov sb, r7
+	mov sb, r7   @ unk40
 _020002D2:
 	lsls r1, r3, #2
 	mov r7, ip
@@ -387,7 +387,7 @@ _0200036C:
 	cmp r2, #2
 	beq _02000404
 	b _02000410
-_02000372:
+_02000372:  @ 0
 	movs r1, #0x30
 	adds r0, r5, #0
 	ands r0, r1
@@ -438,7 +438,7 @@ _02000372:
 _020003D0:
 	movs r0, #1
 	strb r0, [r7, #1]
-_020003D4:
+_020003D4:  @ 1
 	ldr r1, _020003FC @ =gUnknown_020010D0
 	ldrb r0, [r1, #2]
 	cmp r0, #0
@@ -459,7 +459,7 @@ _020003FC: .4byte gUnknown_020010D0
 _02000400:
 	movs r0, #2
 	strb r0, [r1, #1]
-_02000404:
+_02000404:  @ 2
 	mov r0, ip
 	bl sub_020004E0
 	mov r0, r8
@@ -771,7 +771,7 @@ _02000654: .4byte 0x0000FEFE
 _02000658:
 	mov r0, sl
 	adds r0, #0x30
-	mov r1, sb
+	mov r1, sb  @ i * 4
 	adds r4, r1, r0
 	ldr r2, [r6]
 	ldr r3, [r4]
@@ -1197,7 +1197,7 @@ sub_020009A0: @ 0x020009A0
 	push {r4, r5, r6, lr}
 	lsls r0, r0, #0x18
 	lsrs r6, r0, #0x18
-	ldr r1, _020009E0 @ =gUnknown_02000D74
+	ldr r1, _020009E0 @ =gStringTable
 	ldr r0, _020009E4 @ =gUnknown_020011F0
 	ldr r0, [r0, #0x34]
 	lsls r0, r0, #2
@@ -1225,7 +1225,7 @@ _020009D8:
 	pop {r0}
 	bx r0
 	.align 2, 0
-_020009E0: .4byte gUnknown_02000D74
+_020009E0: .4byte gStringTable
 _020009E4: .4byte gUnknown_020011F0
 _020009E8: .4byte gUnknown_02001060
 _020009EC: .4byte gSomeFuncPtr
@@ -1236,19 +1236,13 @@ _020009F4: .4byte 0x00000299
 CpuSet: @ 0x020009F8
 	svc #0xb
 	bx lr
-
+.endif
 	.BALIGN 4, 0
 
-	.SECTION .data
+	.SECTION .rodata
 
-	.GLOBAL gUnknown_02000AB4
-gUnknown_02000AB4:
-	.ASCII "マリオ　ｖｓ．　ドンキーコング　カードｅ＋\0\0"
-
-	.GLOBAL gUnknown_02000AE0
-gUnknown_02000AE0:
-	.ASCII "マリオ　ｖｓ．　ドンキーコング\0\0"
-
+.if 0
+	.BALIGN 4, 0
 	.ASCII "MultiSio010918\0\0"
 
 	.GLOBAL gUnknown_02000B10
@@ -1266,7 +1260,11 @@ gUnknown_02000BE0:
 	.GLOBAL gUnknown_02000C18
 gUnknown_02000C18:
 	.ASCII "そうしんのよういができました。\n\nカードｅリーダー＋がささっているゲームボーイアドバン\nスと、マリオｖｓ．ドンキーコングのカートリッジがささ\nっているゲームボーイアドバンスを、つうしんケーブルで\nつなぎ、メニューで「ステージをついか」をえらんでスタ\nートさせてください。\nＢボタンをおすとキャンセルします。\n\0\0\0\0"
-	
+.endif
+	.SECTION .data
+
+	.balign 4, 0
+.if 0
 	.GLOBAL gUnknown_02000D48
 gUnknown_02000D48:
 	.incbin "data/palette.gbapal"
@@ -1289,14 +1287,17 @@ gUnknown_02000D6E:
 	.byte 0x04
 	.byte 0x00
 
-	.GLOBAL gUnknown_02000D74
-gUnknown_02000D74:
+	.GLOBAL gStringTable
+gStringTable:
 	.4byte gUnknown_02000C18
 	.4byte gUnknown_02000C18
 	.4byte gUnknown_02000BE0
 	.4byte gUnknown_02000B74
 	.4byte gUnknown_02000B10
 	.4byte gUnknown_02000B74
+.endif
+
+	.section .level
 
 	.GLOBAL gUnknown_02000D8C
 gUnknown_02000D8C:

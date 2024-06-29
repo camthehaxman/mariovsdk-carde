@@ -11,8 +11,17 @@ SECTIONS
 		tools/agbcc/lib/libgcc.a:_call_via_rX.o(.text);
 		tools/agbcc/lib/libgcc.a:_udivsi3.o(.text);
 		tools/agbcc/lib/libgcc.a:_dvmd_tls.o(.text);
-		asm/code.o(.data);
 	} = 0
+
+	.data (READONLY) :
+	ALIGN(4)
+	{
+		src/code.o(.rodata);
+		asm/code.o(.rodata);
+		src/code.o(.data);
+		asm/code.o(.data);
+		asm/code.o(.level);
+	}
 
 	. = 0x02001060;
 /*	.bss (NOLOAD) :
