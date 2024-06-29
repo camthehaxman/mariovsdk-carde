@@ -12,5 +12,23 @@ SECTIONS
 		asm/code.o(.data);
 	} = 0
 
+	. = 0x02001060;
+/*	.bss (NOLOAD) :
+	ALIGN(4)
+	{
+		. = 0;		gUnknown_02001060 = .;
+		. = 0x11F0;	gUnknown_020011F0 = .;
+	} = 0
+*/
+gUnknown_02001060 = 0x02001060;
+gUnknown_02001070 = 0x02001070;
+gUnknown_020010B4 = 0x020010B4;
+gUnknown_020010D0 = 0x020010D0;
+gUnknown_020010D4 = 0x020010D4;
+gUnknown_020011F0 = 0x020011F0;
+gUnknown_020011F4 = 0x020011F4;
+
+	gSomeFuncPtr = 0x030075FC;
+
 	/DISCARD/ : { *(*); }
 }
