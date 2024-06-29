@@ -6,5 +6,11 @@ SECTIONS
 	ALIGN(4)
 	{
 		asm/code.o(.text);
+		tools/agbcc/lib/libgcc.a:_call_via_rX.o(.text);
+		tools/agbcc/lib/libgcc.a:_udivsi3.o(.text);
+		tools/agbcc/lib/libgcc.a:_dvmd_tls.o(.text);
+		asm/code.o(.data);
 	} = 0
+
+	/DISCARD/ : { *(*); }
 }
