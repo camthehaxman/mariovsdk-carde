@@ -1,16 +1,19 @@
 #include "gba/gba.h"
 
-extern u32 (*gSomeFuncPtr)(int code, ...);
-
-extern void sub_020005C4();
-extern u8 gUnknown_02001070[];
-extern u8 gUnknown_02000D8C[];
-extern u8 gUnknown_020010B4;
-
-struct SubC0
+enum
 {
-    u8 filler0[0x48];
+    EREADER_OUTPUT_TEXT = 0x299,
 };
+
+extern u32 (*gEReaderAPIEntry)(int code, ...);
+
+extern u8 gLevelData[];
+
+static u32 gUnknown_02001060;
+static u8 unusedFiller[0x8];
+static u8 gUnknown_02001070[0x44];
+static u8 gUnknown_020010B4;
+static u8 unusedFiller2[0x18];
 
 struct Struct10D0_child
 {
@@ -19,7 +22,7 @@ struct Struct10D0_child
     u16 unk2;
 };
 
-extern struct Struct10D0
+struct Struct10D0
 {
     u8 unk0;
     u8 unk1;
@@ -45,16 +48,37 @@ extern struct Struct10D0
     u8 filler68[0x78-0x68];
     void *unk78[2];
     u8 filler80[0x90-0x80];
-    struct SubC0 unk90[0];
-    u8 filler98[0xA8-0x90];
-    struct SubC0 unkA8[0];
-    u8 fillerB0[0xC0-0xA8];
-    struct SubC0 unkC0[0];
-} gUnknown_020010D0;
+    u16 unk90[2][0x24];
+};
+
+static struct Struct10D0 gUnknown_020010D0;
+
+static struct
+{
+    u32 unk0;
+    u8 unk4;
+    u8 unk5;
+    u8 unk6;
+    u8 filler7[1];
+    u8 unk8[1];
+    u8 filler9[0x10-0x9];
+    u8 filler10;
+    u8 filler11[3];
+    u8 unk14;
+    u8 unk15;
+    u8 filler16[0x34-0x16];
+    u32 unk34;
+    u8 *unk38;
+    s32 unk3C;
+    u32 unk40;
+    s32 unk44;
+    u32 unk48;
+    u32 unk4C;
+} gUnknown_020011F0;
 
 // simple black and white palette
 __attribute__((aligned(4)))
-u16 gUnknown_02000D48[16] = { 0, 0x7FFF };
+u16 gBlackWhitePalette[16] = { 0, 0x7FFF };
 
 u8 gUnknown_02000D68[] = { 5, 6, 6, 7, 8, 7 };
 u8 gUnknown_02000D6E[] = { 0, 0, 0, 0, 4, 0 };
@@ -62,6 +86,7 @@ u8 gUnknown_02000D6E[] = { 0, 0, 0, 0, 4, 0 };
 void sub_02000260(void);
 void sub_0200046C(void *arg0);
 int sub_020004E0(u8 *arg0);
+void sub_020005C4(void);
 int sub_020008A4(u16 arg0);
 void sub_02000980(void *arg0, u32 arg1);
 void sub_020009A0(u8 arg0);
@@ -75,52 +100,54 @@ int AgbMain(void)
     u8 r4;
     u16 r4_;
 
-    gSomeFuncPtr(0x2EA, 0x64);
-    gSomeFuncPtr(0x210, 0x4E, 0);
-    gSomeFuncPtr(0x27E, gUnknown_02001070, 0, 0x10);
-    gSomeFuncPtr(0x27E, gUnknown_02000D48, 0x10, 0x10);
+    gEReaderAPIEntry(0x2EA, 0x64);
+    gEReaderAPIEntry(0x210, 0x4E, 0);
+    gEReaderAPIEntry(0x27E, gUnknown_02001070, 0, 0x10);
+    gEReaderAPIEntry(0x27E, gBlackWhitePalette, 0x10, 0x10);
     sub_02000260();
-    sub_02000980(gUnknown_02000D8C, 0x2D4);
-    gSomeFuncPtr(0x2C3, sub_020005C4);
-    r7 = gSomeFuncPtr(0x290, 0x101, 0x102, 0x1E03);
-    gSomeFuncPtr(0x29A, r7 << 8);
-    gSomeFuncPtr(0x291, r7, 0);
-    gSomeFuncPtr(0x292, r7);
-    gSomeFuncPtr(0x298, r7, 0x100);
-    gSomeFuncPtr(0x299, r7, 0x508, "マリオ　ｖｓ．　ドンキーコング　カードｅ＋");
+    sub_02000980(gLevelData, 0x2D4);
+    gEReaderAPIEntry(0x2C3, sub_020005C4);
+    r7 = gEReaderAPIEntry(0x290, 0x101, 0x102, 0x1E03);
+    gEReaderAPIEntry(0x29A, r7 << 8);
+    gEReaderAPIEntry(0x291, r7, 0);
+    gEReaderAPIEntry(0x292, r7);
+    gEReaderAPIEntry(0x298, r7, 0x100);
+    gEReaderAPIEntry(EREADER_OUTPUT_TEXT, r7, 0x508, "マリオ　ｖｓ．　ドンキーコング　カードｅ＋");
+    // left corner bracket (「) character
     sp0[0] = 0x81;
     sp0[1] = 0x75;
-    src = gUnknown_02000D8C + 0x10;
+    src = gLevelData + 0x10;
     dest = sp0 + 2;
     while (*src != 0)
         *dest++ = *src++;
+    // right corner bracket (」) character
     *dest++ = 0x81;
     *dest++ = 0x76;
     *dest++ = 0;
-    gSomeFuncPtr(0x299, r7, 0x510, sp0);
-    r7 = gSomeFuncPtr(0x290, 0x101, 0x105, 0x1E10);
-    gSomeFuncPtr(0x29A, r7 << 8);
-    gSomeFuncPtr(0x291, r7, 0);
-    gSomeFuncPtr(0x292, r7);
-    gSomeFuncPtr(0x298, r7, 0x100);
-    r4 = gSomeFuncPtr(0x290, 0x101, 0, 0x1E02);
-    gSomeFuncPtr(0x29A, (r4 << 8) | 2);
-    gSomeFuncPtr(0x291, r4, 0);
-    gSomeFuncPtr(0x292, r4);
-    gSomeFuncPtr(0x298, r4, 0x100);
-    gSomeFuncPtr(0x299, r4, 0x402, "マリオ　ｖｓ．　ドンキーコング");
-    gSomeFuncPtr(0x21A, 0x10, 0x23);
-    gSomeFuncPtr(0x200, 0x10);
+    gEReaderAPIEntry(EREADER_OUTPUT_TEXT, r7, 0x510, sp0);
+    r7 = gEReaderAPIEntry(0x290, 0x101, 0x105, 0x1E10);
+    gEReaderAPIEntry(0x29A, r7 << 8);
+    gEReaderAPIEntry(0x291, r7, 0);
+    gEReaderAPIEntry(0x292, r7);
+    gEReaderAPIEntry(0x298, r7, 0x100);
+    r4 = gEReaderAPIEntry(0x290, 0x101, 0, 0x1E02);
+    gEReaderAPIEntry(0x29A, (r4 << 8) | 2);
+    gEReaderAPIEntry(0x291, r4, 0);
+    gEReaderAPIEntry(0x292, r4);
+    gEReaderAPIEntry(0x298, r4, 0x100);
+    gEReaderAPIEntry(EREADER_OUTPUT_TEXT, r4, 0x402, "マリオ　ｖｓ．　ドンキーコング");
+    gEReaderAPIEntry(0x21A, 0x10, 0x23);
+    gEReaderAPIEntry(0x200, 0x10);
     r4_ = 0;
-    gUnknown_020010B4 = r4_;
-    do
+    gUnknown_020010B4 = 0;
+    while (gUnknown_020010B4 == 0)
     {
-        gSomeFuncPtr(0x300, 1);
+        gEReaderAPIEntry(0x300, 1);
         gUnknown_020010B4 = sub_020008A4(r4_);
         sub_020009A0(r7);
-        r4_ = gSomeFuncPtr(0x301);
-    } while (gUnknown_020010B4 == 0);
-    return 2;
+        r4_ = gEReaderAPIEntry(0x301);
+    } 
+    return 2;  // return to menu
 }
 
 const char unusedString[] = "MultiSio010918";
@@ -163,23 +190,23 @@ void sub_02000260(void)
     int i;
 
     REG_IME = 0;
-    REG_IE &= 0xFF3F;
+    REG_IE &= ~(INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL);
     REG_IME = 1;
     REG_RCNT = 0;
-    *(u32 *)&REG_SIOCNT = 0x80 << 6;
+    *(u32 *)&REG_SIOCNT = 1 << 13;
     REG_SIOCNT |= 0x4003;
-    CpuFill32(0, &gUnknown_020010D0, 0x48*4);
+    CpuFill32(0, &gUnknown_020010D0, 0x120);
     gUnknown_020010D0.unk14 = -1;
     gUnknown_020010D0.unk28 = &gUnknown_020010D0.unk60;
     gUnknown_020010D0.unk2C = &gUnknown_020010D0.unk78;
     for (i = 0; i < 2; i++)
     {
-        gUnknown_020010D0.unk30[i] = &gUnknown_020010D0.unk90[i];
-        gUnknown_020010D0.unk40[i] = &gUnknown_020010D0.unkA8[i];
-        gUnknown_020010D0.unk50[i] = &gUnknown_020010D0.unkC0[i];
+        gUnknown_020010D0.unk30[i] = &gUnknown_020010D0.unk90[i][0x00];
+        gUnknown_020010D0.unk40[i] = &gUnknown_020010D0.unk90[i][0x0C];
+        gUnknown_020010D0.unk50[i] = &gUnknown_020010D0.unk90[i][0x18];
     }
     REG_IME = 0;
-    REG_IE |= 0x80;
+    REG_IE |= INTR_FLAG_SERIAL;
     REG_IME = 1;
 }
 
@@ -225,8 +252,8 @@ int sub_02000340(void *arg0, int arg1)
             if (r2 == 0 && gUnknown_020010D0.unk14 == -1)
             {
                 REG_IME = 0;
-                REG_IE &= 0xFF7F;
-                REG_IE |= 0x40;
+                REG_IE &= ~INTR_FLAG_SERIAL;
+                REG_IE |= INTR_FLAG_TIMER3;
                 REG_IME = 1;
                 ((struct SomeBitfield *)&REG_SIOCNT)->unk1_6 = 0;
                 REG_IF = 0xC0;
@@ -379,7 +406,7 @@ void sub_020006D8(void)
 void sub_020006F0(void)
 {
     REG_IME = 0;
-    REG_IE &= 0xFF3F;
+    REG_IE &= ~(INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL);
     REG_IME = 1;
 
     REG_SIOCNT = 0x2003;
@@ -392,29 +419,6 @@ void sub_02000740(void)
 {
     gUnknown_020010D0.unk1 = 0;
 }
-
-extern struct
-{
-    u32 unk0;
-    u8 unk4;
-    u8 unk5;
-    u8 unk6;
-    u8 filler7[1];
-    u8 unk8[1];
-    u8 filler9[0x10-0x9];
-    u8 filler10;
-    u8 filler11[3];
-    u8 unk14;
-    u8 unk15;
-    u8 filler16[0x34-0x16];
-    u32 unk34;
-    u8 *unk38;
-    s32 unk3C;
-    u32 unk40;
-    s32 unk44;
-    u32 unk48;
-    u32 unk4C;
-} gUnknown_020011F0;
 
 void sub_0200074C(int unused)
 {
@@ -434,14 +438,14 @@ void sub_0200074C(int unused)
             r5 = 0;
             gUnknown_020011F0.unk4 = 4;
             gUnknown_020011F0.unk34 = 4;
-            gSomeFuncPtr(0x105, 3);
+            gEReaderAPIEntry(0x105, 3);
         }
         else if (r4 + 12 >= gUnknown_020011F0.unk3C)
         {
             r5 = gUnknown_020011F0.unk3C - r4;
             gUnknown_020011F0.unk4 = 4;
             gUnknown_020011F0.unk34 = 4;
-            gSomeFuncPtr(0x105, 3);
+            gEReaderAPIEntry(0x105, 3);
         }
         if (r5 > 0)
             CpuCopy16(gUnknown_020011F0.unk38 + r4, gUnknown_020011F0.unk8, r5);
@@ -467,7 +471,7 @@ int sub_020007E0(int unused)
         if (r2 == 2)
         {
             gUnknown_020011F0.unk34 = r2;
-            gSomeFuncPtr(0x105, 11);
+            gEReaderAPIEntry(0x105, 11);
         }
         break;
     case 2:
@@ -475,7 +479,7 @@ int sub_020007E0(int unused)
         if (r2 == 3)
         {
             gUnknown_020011F0.unk34 = r2;
-            gSomeFuncPtr(0x105, 2);
+            gEReaderAPIEntry(0x105, 2);
         }
         else if (r2 == 1)
             gUnknown_020011F0.unk34 = r2;
@@ -485,7 +489,7 @@ int sub_020007E0(int unused)
         if (r2 == 4)
         {
             gUnknown_020011F0.unk34 = r2;
-            gSomeFuncPtr(0x105, 3);
+            gEReaderAPIEntry(0x105, 3);
         }
         else if (r2 != 3)
             gUnknown_020011F0.unk34 = 5;
@@ -496,7 +500,7 @@ int sub_020007E0(int unused)
         if (r2 == 4)
         {
             gUnknown_020011F0.unk34 = r2;
-            gSomeFuncPtr(0x105, 3);
+            gEReaderAPIEntry(0x105, 3);
         }
         else if (r2 == 3)
             gUnknown_020011F0.unk34 = r2;
@@ -509,13 +513,13 @@ int sub_020008A4(u16 arg0)
 {
     if ((arg0 & 2) && (gUnknown_020011F0.unk34 < 2 || gUnknown_020011F0.unk34 == 4))
     {
-        gSomeFuncPtr(0x105, 6);
+        gEReaderAPIEntry(0x105, 6);
         return 1;
     }
     if ((arg0 & 1) && gUnknown_020011F0.unk34 == 4)
     {
         gUnknown_020011F0.unk34 = 0;
-        gSomeFuncPtr(0x105, 5);
+        gEReaderAPIEntry(0x105, 5);
     }
     sub_0200074C(arg0);
     gUnknown_020011F0.unk0 = sub_02000340(&gUnknown_020011F0.unk4, &gUnknown_020011F0.unk14);
@@ -549,8 +553,6 @@ void sub_02000980(void *arg0, u32 arg1)
     gUnknown_020011F0.unk40 = arg1 / 12;
 }
 
-extern u32 gUnknown_02001060;
-
 void sub_020009A0(u8 arg0)
 {
     u32 r5 = gStringTable[gUnknown_020011F0.unk34];
@@ -558,8 +560,8 @@ void sub_020009A0(u8 arg0)
     if (gUnknown_02001060 != r5)
     {
         gUnknown_02001060 = r5;
-        gSomeFuncPtr(0x292, arg0);
-        gSomeFuncPtr(0x299, arg0, 0x500, r5);
+        gEReaderAPIEntry(0x292, arg0);
+        gEReaderAPIEntry(0x299, arg0, 0x500, r5);
     }
 }
 

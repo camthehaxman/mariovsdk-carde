@@ -4,3 +4,5 @@
 baserom.bin
 mariovsdk-carde-18.bin
 tools/*
+*.dump
+src/*.s
