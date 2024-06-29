@@ -2,12 +2,6 @@
 
 	.syntax unified
 
-	arm_func_start sub_02000000
-sub_02000000: @ 0x02000000
-	ldr r1, _02000008 @ =main
-	bx r1
-_02000008: .4byte main
-
 	thumb_func_start main
 main: @ 0x0200000C
 	push {r4, r5, r6, r7, lr}
@@ -1247,34 +1241,63 @@ CpuSet: @ 0x020009F8
 
 	.SECTION .data
 
-
 	.GLOBAL gUnknown_02000AB4
 gUnknown_02000AB4:
-	.INCBIN "baserom.bin", 0xAB4, 0xAE0-0xAB4
+	.ASCII "マリオ　ｖｓ．　ドンキーコング　カードｅ＋\0\0"
 
 	.GLOBAL gUnknown_02000AE0
 gUnknown_02000AE0:
-	.INCBIN "baserom.bin", 0xAE0, 0xD48-0xAE0
+	.ASCII "マリオ　ｖｓ．　ドンキーコング\0\0"
 
+	.ASCII "MultiSio010918\0\0"
+
+	.GLOBAL gUnknown_02000B10
+gUnknown_02000B10:
+	.ASCII "そうしんかんりょう。\n\nＡボタンをおすともういちどそうしんします。\nＢボタンをおすとキャンセルします。\0"
+
+	.GLOBAL gUnknown_02000B74
+gUnknown_02000B74:
+	.ASCII "そうしんちゅう。\n\nゲームボーイアドバンスのでんげんをきったり、つうしん\nケーブルをぬいたりしないでください。\0"
+
+	.GLOBAL gUnknown_02000BE0
+gUnknown_02000BE0:
+	.ASCII "そうしんのよういができました。\n\nつうしんたいきちゅう。\0\0"
+
+	.GLOBAL gUnknown_02000C18
+gUnknown_02000C18:
+	.ASCII "そうしんのよういができました。\n\nカードｅリーダー＋がささっているゲームボーイアドバン\nスと、マリオｖｓ．ドンキーコングのカートリッジがささ\nっているゲームボーイアドバンスを、つうしんケーブルで\nつなぎ、メニューで「ステージをついか」をえらんでスタ\nートさせてください。\nＢボタンをおすとキャンセルします。\n\0\0\0\0"
+	
 	.GLOBAL gUnknown_02000D48
 gUnknown_02000D48:
-	.INCBIN "baserom.bin", 0xD48, 0xD68-0xD48
+	.incbin "data/palette.gbapal"
 
 	.GLOBAL gUnknown_02000D68
 gUnknown_02000D68:
-
-	.GLOBAL gUnknown_02000D68
-gUnknown_02000D68:
-	.INCBIN "baserom.bin", 0xD68, 0xD6E-0xD68
+	.byte 0x05
+	.byte 0x06
+	.byte 0x06
+	.byte 0x07
+	.byte 0x08
+	.byte 0x07
 
 	.GLOBAL gUnknown_02000D6E
 gUnknown_02000D6E:
-	.INCBIN "baserom.bin", 0xD6E, 0xD74-0xD6E
+	.byte 0x00
+	.byte 0x00
+	.byte 0x00
+	.byte 0x00
+	.byte 0x04
+	.byte 0x00
 
 	.GLOBAL gUnknown_02000D74
 gUnknown_02000D74:
-	.INCBIN "baserom.bin", 0xD74, 0xD8C-0xD74
+	.4byte gUnknown_02000C18
+	.4byte gUnknown_02000C18
+	.4byte gUnknown_02000BE0
+	.4byte gUnknown_02000B74
+	.4byte gUnknown_02000B10
+	.4byte gUnknown_02000B74
 
 	.GLOBAL gUnknown_02000D8C
 gUnknown_02000D8C:
-	.INCBIN "baserom.bin", 0xD8C, 0x1060-0xD8C
+	.incbin "data/card-e.bin"
