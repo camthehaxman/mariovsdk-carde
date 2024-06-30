@@ -3,6 +3,7 @@
 *.map
 *.inc.c
 *.exe
+*.vpk
 baserom.bin
 mariovsdk-carde-18.bin
 tools/agbcc

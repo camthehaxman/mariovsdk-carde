@@ -1,0 +1,3 @@
+[submodule "tools/nedclib"]
+	path = tools/nedclib
+	url = https://github.com/Lymia/nedclib

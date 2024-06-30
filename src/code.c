@@ -159,11 +159,13 @@ int AgbMain(void)
     sub_02000260();
     sub_02000980(gLevelData, sizeof(gLevelData));
     gEReaderAPIEntry(0x2C3, process_transfer);
+
     r7 = gEReaderAPIEntry(0x290, 0x101, 0x102, 0x1E03);
     gEReaderAPIEntry(0x29A, r7 << 8);
     gEReaderAPIEntry(0x291, r7, 0);
     gEReaderAPIEntry(0x292, r7);
     gEReaderAPIEntry(0x298, r7, 0x100);
+
     gEReaderAPIEntry(EREADER_OUTPUT_TEXT, r7, 0x508, strMarioVsDonkeyKongCardEPlus);
     // left corner bracket (u) character
     text[0] = 0x81;
@@ -178,17 +180,21 @@ int AgbMain(void)
     *dest++ = 0x76;
     *dest++ = 0;
     gEReaderAPIEntry(EREADER_OUTPUT_TEXT, r7, 0x510, text);
+
     r7 = gEReaderAPIEntry(0x290, 0x101, 0x105, 0x1E10);
     gEReaderAPIEntry(0x29A, r7 << 8);
     gEReaderAPIEntry(0x291, r7, 0);
     gEReaderAPIEntry(0x292, r7);
     gEReaderAPIEntry(0x298, r7, 0x100);
+
     r4 = gEReaderAPIEntry(0x290, 0x101, 0, 0x1E02);
     gEReaderAPIEntry(0x29A, (r4 << 8) | 2);
     gEReaderAPIEntry(0x291, r4, 0);
     gEReaderAPIEntry(0x292, r4);
     gEReaderAPIEntry(0x298, r4, 0x100);
+
     gEReaderAPIEntry(EREADER_OUTPUT_TEXT, r4, 0x402, strMarioVsDonkeyKong);
+
     gEReaderAPIEntry(0x21A, 0x10, 0x23);
     gEReaderAPIEntry(0x200, 0x10);
     r4_ = 0;
@@ -255,7 +261,7 @@ static inline u32 someinline(void)
     return ret;
 }
 
-int sub_02000340(const void *data, int arg1)
+int sub_02000340(const void *data, void *arg1)
 {
     u32 siocnt = *(u32 *)&REG_SIOCNT;
     u32 r2_;
@@ -593,7 +599,7 @@ void sub_020009A0(u8 arg0)
     {
         gUnknown_02001060 = r5;
         gEReaderAPIEntry(0x292, arg0);
-        gEReaderAPIEntry(0x299, arg0, 0x500, r5);
+        gEReaderAPIEntry(EREADER_OUTPUT_TEXT, arg0, 0x500, r5);
     }
 }
 
