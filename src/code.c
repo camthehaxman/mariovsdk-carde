@@ -7,15 +7,13 @@ enum
 
 extern u32 (*gEReaderAPIEntry)(int code, ...);
 
-extern u8 gLevelData[];
-
 static const char *gUnknown_02001060;
 static u8 unusedFiller[0x8];
 static u8 gUnknown_02001070[0x44];
 static u8 gUnknown_020010B4;
 static u8 unusedFiller2[0x18];
 
-struct Struct10D0_child
+struct SomeHeader
 {
     u8 unk0;
     u8 unk1;
@@ -25,21 +23,21 @@ struct Struct10D0_child
 struct Struct10D0
 {
     u8 unk0;
-    u8 unk1;
+    u8 state;
     u8 unk2;
     u8 unk3;
     u8 unk4[2];
     u8 filler6[2];
     u8 unk8;
-    u8 unk9;
+    u8 error;
     u8 unkA;
     u8 unkB;
     u8 fillerC[0x14-0xC];
-    s32 unk14;
+    s32 bufferPos;
     s32 unk18[2];
     u8 filler20[0x28-0x20];
-    struct Struct10D0_child *unk28;
-    void *unk2C;
+    struct SomeHeader *bufferA;
+    u16 *bufferB;
     u16 *unk30[2];
     u8 filler38[8];
     u16 *unk40[4];
@@ -67,7 +65,7 @@ static struct
     u8 unk14;
     u8 unk15;
     u8 filler16[0x34-0x16];
-    u32 stringIndex;
+    u32 state;
     u8 *unk38;
     s32 unk3C;
     u32 unk40;
@@ -89,6 +87,11 @@ const char unusedString[] = "MultiSio010918";
 
 const char *gStringTable[] =
 {
+    // Is now available.
+    // Link e-Reader to Mario vs. Donkey Kong
+    // and select the e-reader card Menu
+    // then select ADD LEVEL to begin.
+    // Press B Button to Cancel.
     "そうしんのよういができました。\n\n"
     "カードｅリーダー＋がささっているゲームボーイアドバン\n"
     "スと、マリオｖｓ．ドンキーコングのカートリッジがささ\n"
@@ -96,6 +99,11 @@ const char *gStringTable[] =
     "つなぎ、メニューで「ステージをついか」をえらんでスタ\n"
     "ートさせてください。\nＢボタンをおすとキャンセルします。\n",
 
+    // Is now available.
+    // Link e-Reader to Mario vs. Donkey Kong
+    // and select the e-reader card Menu
+    // then select ADD LEVEL to begin.
+    // Press B Button to Cancel.
     "そうしんのよういができました。\n\n"
     "カードｅリーダー＋がささっているゲームボーイアドバン\n"
     "スと、マリオｖｓ．ドンキーコングのカートリッジがささ\n"
@@ -103,13 +111,18 @@ const char *gStringTable[] =
     "つなぎ、メニューで「ステージをついか」をえらんでスタ\n"
     "ートさせてください。\nＢボタンをおすとキャンセルします。\n",
 
+    // Is now available.
+    // Communication in progress.
     "そうしんのよういができました。\n\n"
     "つうしんたいきちゅう。",
 
+    // Sending...
+    // Do not turn off the GBA or unplug the link cable.
     "そうしんちゅう。\n\n"
     "ゲームボーイアドバンスのでんげんをきったり、つうしん\n"
     "ケーブルをぬいたりしないでください。",
 
+    // Transmission complete.
     "そうしんかんりょう。\n\n"
     "Ａボタンをおすともういちどそうしんします。\n"
     "Ｂボタンをおすとキャンセルします。",
@@ -123,9 +136,9 @@ const char *gStringTable[] =
 #include "levels/08-the_thwamplet.inc.c"
 
 void sub_02000260(void);
-void sub_0200046C(void *arg0);
+void prepare_data_for_transfer(const void *arg0);
 int sub_020004E0(u8 *arg0);
-void sub_020005C4(void);
+void process_transfer(void);
 int sub_020008A4(u16 arg0);
 void sub_02000980(void *arg0, u32 arg1);
 void sub_020009A0(u8 arg0);
@@ -133,7 +146,7 @@ void sub_020009A0(u8 arg0);
 int AgbMain(void)
 {
     u8 r7;
-    u8 sp0[0x100];
+    u8 text[0x100];
     u8 *dest;
     u8 *src;
     u8 r4;
@@ -144,8 +157,8 @@ int AgbMain(void)
     gEReaderAPIEntry(0x27E, gUnknown_02001070, 0, 0x10);
     gEReaderAPIEntry(0x27E, gBlackWhitePalette, 0x10, 0x10);
     sub_02000260();
-    sub_02000980(gLevelData, 0x2D4);
-    gEReaderAPIEntry(0x2C3, sub_020005C4);
+    sub_02000980(gLevelData, sizeof(gLevelData));
+    gEReaderAPIEntry(0x2C3, process_transfer);
     r7 = gEReaderAPIEntry(0x290, 0x101, 0x102, 0x1E03);
     gEReaderAPIEntry(0x29A, r7 << 8);
     gEReaderAPIEntry(0x291, r7, 0);
@@ -153,17 +166,18 @@ int AgbMain(void)
     gEReaderAPIEntry(0x298, r7, 0x100);
     gEReaderAPIEntry(EREADER_OUTPUT_TEXT, r7, 0x508, strMarioVsDonkeyKongCardEPlus);
     // left corner bracket (「) character
-    sp0[0] = 0x81;
-    sp0[1] = 0x75;
+    text[0] = 0x81;
+    text[1] = 0x75;
+    // copy level name
     src = gLevelData + 0x10;
-    dest = sp0 + 2;
+    dest = text + 2;
     while (*src != 0)
         *dest++ = *src++;
     // right corner bracket (」) character
     *dest++ = 0x81;
     *dest++ = 0x76;
     *dest++ = 0;
-    gEReaderAPIEntry(EREADER_OUTPUT_TEXT, r7, 0x510, sp0);
+    gEReaderAPIEntry(EREADER_OUTPUT_TEXT, r7, 0x510, text);
     r7 = gEReaderAPIEntry(0x290, 0x101, 0x105, 0x1E10);
     gEReaderAPIEntry(0x29A, r7 << 8);
     gEReaderAPIEntry(0x291, r7, 0);
@@ -193,33 +207,39 @@ void sub_02000260(void)
 {
     u16 r1;
     int i;
-
+    
+    // Disable timer and serial interrupts
     REG_IME = 0;
     REG_IE &= ~(INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL);
     REG_IME = 1;
+
     REG_RCNT = 0;
-    *(u32 *)&REG_SIOCNT = 1 << 13;
-    REG_SIOCNT |= 0x4003;
+    *(u32 *)&REG_SIOCNT = SIO_MULTI_MODE;  // enable multiplayer mode
+    REG_SIOCNT |= SIO_115200_BPS | SIO_INTR_ENABLE;
+
     CpuFill32(0, &gUnknown_020010D0, sizeof(gUnknown_020010D0));
-    gUnknown_020010D0.unk14 = -1;
-    gUnknown_020010D0.unk28 = &gUnknown_020010D0.unk60;
-    gUnknown_020010D0.unk2C = &gUnknown_020010D0.unk78;
+    gUnknown_020010D0.bufferPos = -1;
+    gUnknown_020010D0.bufferA = &gUnknown_020010D0.unk60;
+    gUnknown_020010D0.bufferB = &gUnknown_020010D0.unk78;
     for (i = 0; i < 2; i++)
     {
         gUnknown_020010D0.unk30[i] = &gUnknown_020010D0.unk90[i][0x00];
         gUnknown_020010D0.unk40[i] = &gUnknown_020010D0.unk90[i][0x0C];
         gUnknown_020010D0.unk50[i] = &gUnknown_020010D0.unk90[i][0x18];
     }
+
+    // Re-enable timer and serial interrupts
     REG_IME = 0;
     REG_IE |= INTR_FLAG_SERIAL;
     REG_IME = 1;
 }
 
-struct SomeBitfield
+struct SIOCNTBitfield
 {
-    u8 unk0;
-    u8 filler1:6;
-    u8 unk1_6:1;
+    u32 unk0:6;
+    u32 error:1;
+    u32 filler7:7;
+    u32 unk1_6:1;
 };
 
 static inline u32 someinline(void)
@@ -235,38 +255,38 @@ static inline u32 someinline(void)
     return ret;
 }
 
-int sub_02000340(void *arg0, int arg1)
+int sub_02000340(const void *data, int arg1)
 {
-    u32 r5 = *(u32 *)&REG_SIOCNT;
+    u32 siocnt = *(u32 *)&REG_SIOCNT;
     u32 r2_;
     u32 r1;
     u32 r0;
-    register u32 temp asm("r1");
+    register u32 idMask asm("r1");
 
-    switch (gUnknown_020010D0.unk1)
+    switch (gUnknown_020010D0.state)
     {
     case 0:
-        temp = 0x30;
-        if (!(r5 & temp))
+        idMask = SIO_ID;
+        if ((siocnt & idMask) == 0)  // Are we master?
         {
             u8 r2;
-            u8 r4 = r5 & 0x88;
-            if (r4 != 8)
+            u8 status = siocnt & 0x88;
+            if (status != 8)
                 break;
-            r2 = r5 & 4;
-            if (r2 == 0 && gUnknown_020010D0.unk14 == -1)
+            r2 = siocnt & (SIO_MULTI_SI_MASK << SIO_MULTI_SI_SHIFT);
+            if (r2 == 0 && gUnknown_020010D0.bufferPos == -1)
             {
                 REG_IME = 0;
                 REG_IE &= ~INTR_FLAG_SERIAL;
                 REG_IE |= INTR_FLAG_TIMER3;
                 REG_IME = 1;
-                ((struct SomeBitfield *)&REG_SIOCNT)->unk1_6 = 0;
+                ((struct SIOCNTBitfield *)&REG_SIOCNT)->unk1_6 = 0;
                 REG_IF = INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL;
                 REG_TM3CNT = 0xB1FC;
-                gUnknown_020010D0.unk0 = r4;
+                gUnknown_020010D0.unk0 = status;
             }
         }
-        gUnknown_020010D0.unk1 = 1;
+        gUnknown_020010D0.state = 1;
         // fall through
     case 1:
         if (gUnknown_020010D0.unk2 != 0)
@@ -274,41 +294,42 @@ int sub_02000340(void *arg0, int arg1)
             if (gUnknown_020010D0.unkA < 8)
                 gUnknown_020010D0.unkA++;
             else
-                gUnknown_020010D0.unk1 = 2;
+                gUnknown_020010D0.state = 2;
         }
         // fall through
     case 2:
         sub_020004E0(arg1);
-        sub_0200046C(arg0);
+        prepare_data_for_transfer(data);
         break;
     }
     gUnknown_020010D0.unkB++;
     r2_ = someinline();
-    if (gUnknown_020010D0.unk9 != 0)
-        r2_ |= 0x80 << 5;
+    if (gUnknown_020010D0.error)
+        r2_ |= 0x1000;
     r1 = (gUnknown_020010D0.unkA >> 3) << 15;
-    if (((r5 << 0x1A) >> 0x1E) > 1)
-        r0 = r2_ | (0x80 << 6) | r1;
+    if (((siocnt << 0x1A) >> 0x1E) > 1)
+        r0 = r2_ | 0x2000 | r1;
     else
         r0 = r2_ | r1;
     return r0;
 }
 
-void sub_0200046C(void *src)
+void prepare_data_for_transfer(const void *data)
 {
     u32 i;
-    int r5 = 0;
+    int sum = 0;
 
-    gUnknown_020010D0.unk28->unk0 = gUnknown_020010D0.unkB;
-    gUnknown_020010D0.unk28->unk1 = gUnknown_020010D0.unk2 ^ gUnknown_020010D0.unk3;
-    gUnknown_020010D0.unk28->unk2 = 0;
-    CpuCopy32(src, gUnknown_020010D0.unk28 + 1, 16);
+    gUnknown_020010D0.bufferA->unk0 = gUnknown_020010D0.unkB;
+    gUnknown_020010D0.bufferA->unk1 = gUnknown_020010D0.unk2 ^ gUnknown_020010D0.unk3;
+    gUnknown_020010D0.bufferA->unk2 = 0;
+    CpuCopy32(data, gUnknown_020010D0.bufferA + 1, 16);
     for (i = 0; i < 10; i++)
-        r5 += ((u16 *)gUnknown_020010D0.unk28)[i];
-    gUnknown_020010D0.unk28->unk2 = ~r5 - 12;
+        sum += ((u16 *)gUnknown_020010D0.bufferA)[i];
+    gUnknown_020010D0.bufferA->unk2 = ~sum - 12;
+
     if (gUnknown_020010D0.unk0 != 0)
         REG_TM3CNT_H = 0;
-    gUnknown_020010D0.unk14 = -1;
+    gUnknown_020010D0.bufferPos = -1;
     if (gUnknown_020010D0.unk0 != 0 && gUnknown_020010D0.unk8 != 0)
         REG_TM3CNT_H = TIMER_ENABLE | TIMER_INTR_ENABLE;
 }
@@ -349,40 +370,43 @@ int sub_020004E0(u8 *arg0)
     return gUnknown_020010D0.unk3;
 }
 
-void sub_020005C4(void)
+void process_transfer(void)
 {
-    u16 sp0[4];
+    u16 sioMulti[4];
     int i;
-    volatile u16 *r3;
+    volatile u16 *pSIOCNT;
 
-    *(u64 *)sp0 = *(u64 *)&REG_SIOMULTI0;  // Well, I guess that's one way to copy it!
+    *(u64 *)sioMulti = *(u64 *)&REG_SIOMULTI0;  // Well, I guess that's one way to copy it!
 
-    gUnknown_020010D0.unk9 = (*(u32 *)&REG_SIOCNT << 0x19) >> 0x1F;
-    r3 = &REG_SIOCNT;
-    if (gUnknown_020010D0.unk14 == -1)
+    gUnknown_020010D0.error = ((struct SIOCNTBitfield *)&REG_SIOCNT)->error;
+
+    // this is weird, but I had to do this t make it match
+#define REG_SIOMLT_SEND_ pSIOCNT[1]
+    pSIOCNT = &REG_SIOCNT;
+
+    if (gUnknown_020010D0.bufferPos == -1)
     {
         void *temp;
-        register u32 r0 asm("r0");
+        u16 r0 = 0xFEFE;
 
-        r0 = 0xFEFE;
-        r3[1] = r0;
-        temp = gUnknown_020010D0.unk2C;
-        gUnknown_020010D0.unk2C = gUnknown_020010D0.unk28;
-        gUnknown_020010D0.unk28 = temp;
+        REG_SIOMLT_SEND_ = r0;
+        temp = gUnknown_020010D0.bufferB;
+        gUnknown_020010D0.bufferB = gUnknown_020010D0.bufferA;
+        gUnknown_020010D0.bufferA = temp;
     }
-    else if (gUnknown_020010D0.unk14 >= 0)
+    else if (gUnknown_020010D0.bufferPos >= 0)
     {
-        r3[1] = ((u16 *)gUnknown_020010D0.unk2C)[gUnknown_020010D0.unk14];
+        REG_SIOMLT_SEND_ = gUnknown_020010D0.bufferB[gUnknown_020010D0.bufferPos];
     }
-    if (gUnknown_020010D0.unk14 < 11)
-        gUnknown_020010D0.unk14++;
+    if (gUnknown_020010D0.bufferPos < 11)
+        gUnknown_020010D0.bufferPos++;
     for (i = 0; i < 2; i++)
     {
-        if (sp0[i] == 0xFEFE && gUnknown_020010D0.unk18[i] > 9)
+        if (sioMulti[i] == 0xFEFE && gUnknown_020010D0.unk18[i] > 9)
             gUnknown_020010D0.unk18[i] = -1;
         else
         {
-            gUnknown_020010D0.unk30[i][gUnknown_020010D0.unk18[i]] = sp0[i];
+            gUnknown_020010D0.unk30[i][gUnknown_020010D0.unk18[i]] = sioMulti[i];
             if (gUnknown_020010D0.unk18[i] == 9)
             {
                 void *r1 = gUnknown_020010D0.unk40[i];
@@ -396,10 +420,13 @@ void sub_020005C4(void)
     }
     if (gUnknown_020010D0.unk0 == 8)
     {
+        // Start transfer
         REG_TM3CNT_H = 0;
-        REG_SIOCNT |= 0x80;
+        REG_SIOCNT |= SIO_START;
         REG_TM3CNT_H = TIMER_ENABLE | TIMER_INTR_ENABLE;
     }
+
+#undef REG_SIOMLT_SEND_
 }
 
 void sub_020006D8(void)
@@ -414,7 +441,7 @@ void sub_020006F0(void)
     REG_IE &= ~(INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL);
     REG_IME = 1;
 
-    REG_SIOCNT = 0x2003;
+    REG_SIOCNT = SIO_115200_BPS | SIO_MULTI_MODE;
     REG_TM3CNT = 0xB1FC;
     REG_IF = INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL;
     gUnknown_020010D0.unk8 = 0;
@@ -422,7 +449,7 @@ void sub_020006F0(void)
 
 void sub_02000740(void)
 {
-    gUnknown_020010D0.unk1 = 0;
+    gUnknown_020010D0.state = 0;
 }
 
 void sub_0200074C(int unused)
@@ -431,8 +458,8 @@ void sub_0200074C(int unused)
     int r6;
     int r4;
 
-    gUnknown_020011F0.unk4 = gUnknown_02000D68[gUnknown_020011F0.stringIndex];
-    if (gUnknown_020011F0.stringIndex == 3)
+    gUnknown_020011F0.unk4 = gUnknown_02000D68[gUnknown_020011F0.state];
+    if (gUnknown_020011F0.state == 3)
     {
         r5 = 12;
         r6 = gUnknown_020011F0.unk15;
@@ -442,14 +469,14 @@ void sub_0200074C(int unused)
             r6 = gUnknown_020011F0.unk40;
             r5 = 0;
             gUnknown_020011F0.unk4 = 4;
-            gUnknown_020011F0.stringIndex = 4;
+            gUnknown_020011F0.state = 4;
             gEReaderAPIEntry(0x105, 3);
         }
         else if (r4 + 12 >= gUnknown_020011F0.unk3C)
         {
             r5 = gUnknown_020011F0.unk3C - r4;
             gUnknown_020011F0.unk4 = 4;
-            gUnknown_020011F0.stringIndex = 4;
+            gUnknown_020011F0.state = 4;
             gEReaderAPIEntry(0x105, 3);
         }
         if (r5 > 0)
@@ -463,19 +490,19 @@ int sub_020007E0(int unused)
 {
     u32 r2 = gUnknown_020011F0.unk14;
 
-    switch (gUnknown_020011F0.stringIndex)
+    switch (gUnknown_020011F0.state)
     {
     default:
     case 0:
         if (r2 == 1)
-            gUnknown_020011F0.stringIndex = r2;
+            gUnknown_020011F0.state = r2;
         else if (r2 == 2)
-            gUnknown_020011F0.stringIndex = r2;
+            gUnknown_020011F0.state = r2;
         break;
     case 1:
         if (r2 == 2)
         {
-            gUnknown_020011F0.stringIndex = r2;
+            gUnknown_020011F0.state = r2;
             gEReaderAPIEntry(0x105, 11);
         }
         break;
@@ -483,32 +510,32 @@ int sub_020007E0(int unused)
         gUnknown_020011F0.unk48++;
         if (r2 == 3)
         {
-            gUnknown_020011F0.stringIndex = r2;
+            gUnknown_020011F0.state = r2;
             gEReaderAPIEntry(0x105, 2);
         }
         else if (r2 == 1)
-            gUnknown_020011F0.stringIndex = r2;
+            gUnknown_020011F0.state = r2;
         break;
     case 3:
         gUnknown_020011F0.unk4C = 1;
         if (r2 == 4)
         {
-            gUnknown_020011F0.stringIndex = r2;
+            gUnknown_020011F0.state = r2;
             gEReaderAPIEntry(0x105, 3);
         }
         else if (r2 != 3)
-            gUnknown_020011F0.stringIndex = 5;
+            gUnknown_020011F0.state = 5;
         break;
     case 4:
         break;
     case 5:
         if (r2 == 4)
         {
-            gUnknown_020011F0.stringIndex = r2;
+            gUnknown_020011F0.state = r2;
             gEReaderAPIEntry(0x105, 3);
         }
         else if (r2 == 3)
-            gUnknown_020011F0.stringIndex = r2;
+            gUnknown_020011F0.state = r2;
         break;
     }
     return 0;
@@ -516,14 +543,14 @@ int sub_020007E0(int unused)
 
 int sub_020008A4(u16 arg0)
 {
-    if ((arg0 & 2) && (gUnknown_020011F0.stringIndex < 2 || gUnknown_020011F0.stringIndex == 4))
+    if ((arg0 & 2) && (gUnknown_020011F0.state < 2 || gUnknown_020011F0.state == 4))
     {
         gEReaderAPIEntry(0x105, 6);
         return 1;
     }
-    if ((arg0 & 1) && gUnknown_020011F0.stringIndex == 4)
+    if ((arg0 & 1) && gUnknown_020011F0.state == 4)
     {
-        gUnknown_020011F0.stringIndex = 0;
+        gUnknown_020011F0.state = 0;
         gEReaderAPIEntry(0x105, 5);
     }
     sub_0200074C(arg0);
@@ -531,7 +558,7 @@ int sub_020008A4(u16 arg0)
     if (gUnknown_020011F0.unk0 & 0x3000)
     {
         gUnknown_020011F0.unk44 = 60;
-        gUnknown_020011F0.stringIndex = gUnknown_02000D6E[gUnknown_020011F0.stringIndex];
+        gUnknown_020011F0.state = gUnknown_02000D6E[gUnknown_020011F0.state];
         return 0;
     }
     if (gUnknown_020011F0.unk0 != 0)
@@ -545,14 +572,14 @@ int sub_020008A4(u16 arg0)
         if (gUnknown_020011F0.unk44 < 60)
             gUnknown_020011F0.unk44++;
         else
-            gUnknown_020011F0.stringIndex = gUnknown_02000D6E[gUnknown_020011F0.stringIndex];
+            gUnknown_020011F0.state = gUnknown_02000D6E[gUnknown_020011F0.state];
     }
     return 0;
 }
 
 void sub_02000980(void *arg0, u32 arg1)
 {
-    gUnknown_020011F0.stringIndex = 0;
+    gUnknown_020011F0.state = 0;
     gUnknown_020011F0.unk38 = arg0;
     gUnknown_020011F0.unk3C = arg1;
     gUnknown_020011F0.unk40 = arg1 / 12;
@@ -560,7 +587,7 @@ void sub_02000980(void *arg0, u32 arg1)
 
 void sub_020009A0(u8 arg0)
 {
-    const char *r5 = gStringTable[gUnknown_020011F0.stringIndex];
+    const char *r5 = gStringTable[gUnknown_020011F0.state];
     
     if (gUnknown_02001060 != r5)
     {

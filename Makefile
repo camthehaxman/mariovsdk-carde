@@ -6,6 +6,9 @@ ifeq ($(VERBOSE),0)
   QUIET := @
 endif
 
+SHELL=/bin/bash -o pipefail
+
+.DELETE_ON_ERROR:
 
 #### Tools ####
 
@@ -59,6 +62,7 @@ $(ELF): $(OFILES) $(LDSCRIPT)
 
 %.o: %.c
 	@echo 'Compiling $<'
+	@rm -f $@
 	$(QUIET) $(CPP) $(CPPFLAGS) $< | $(CC1) $(CC1FLAGS) -o - | $(AS) $(ASFLAGS) -o $*.o
 
 %.o: %.s
