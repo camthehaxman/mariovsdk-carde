@@ -5,7 +5,7 @@ SECTIONS
 	.text (READONLY) :
 	ALIGN(4)
 	{
-		asm/crt0.o(.text);
+		src/entry.o(.text);
 		src/code.o(.text);
 		tools/agbcc/lib/libgcc.a:_call_via_rX.o(.text);
 		tools/agbcc/lib/libgcc.a:_udivsi3.o(.text);
@@ -17,7 +17,6 @@ SECTIONS
 	{
 		src/code.o(.rodata);
 		src/code.o(.data);
-		data/data.o(.data);
 	}
 
 	.bss (NOLOAD) :

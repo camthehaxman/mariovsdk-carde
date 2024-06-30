@@ -16,9 +16,12 @@ AS       := $(DEVKITARM)/bin/arm-none-eabi-as
 LD       := $(DEVKITARM)/bin/arm-none-eabi-ld
 OBJCOPY  := $(DEVKITARM)/bin/arm-none-eabi-objcopy
 
+BIN2C    := tools/bin2c/bin2c
+LVLCKSUM := tools/lvlcksum/lvlcksum
+
 CC1FLAGS := -mthumb-interwork -Wimplicit -Wparentheses -O2 -fhex-asm -fno-common -ffreestanding
-CPPFLAGS := -I tools/agbcc/include -iquote include -nostdinc -undef
-ASFLAGS  := -mcpu=arm7tdmi -mthumb-interwork -I asminclude
+CPPFLAGS := -I tools/agbcc/include -iquote . -iquote include -nostdinc -undef
+ASFLAGS  := -mcpu=arm7tdmi -mthumb-interwork
 
 
 #### Files ####
@@ -28,9 +31,9 @@ ELF      := $(ROM:.bin=.elf)
 MAP      := $(ROM:.bin=.map)
 LDSCRIPT := ldscript.txt
 CFILES   := $(wildcard src/*.c)
-SFILES   := $(wildcard asm/*.s) $(wildcard data/*.s)
+SFILES   := $(wildcard src/*.s)
 OFILES   := $(SFILES:.s=.o) $(CFILES:.c=.o)
-
+LEVELS   := $(wildcard levels/%.s)
 
 #### Main Targets ####
 
@@ -38,8 +41,11 @@ compare: $(ROM)
 	$(QUIET) md5sum -c checksum.md5
 
 clean:
-	$(RM) $(ROM) $(ELF) $(MAP) $(OFILES) src/*.s
+	$(RM) $(ROM) $(ELF) $(MAP) $(OFILES) levels/*.bin levels/*.inc.c levels/*.o
+	$(MAKE) -C tools/bin2c clean
+	$(MAKE) -C tools/lvlcksum clean
 
+src/code.o: levels/08-the_thwamplet.inc.c
 
 #### Recipes ####
 
@@ -53,9 +59,21 @@ $(ELF): $(OFILES) $(LDSCRIPT)
 
 %.o: %.c
 	@echo 'Compiling $<'
-	$(QUIET) $(CPP) $(CPPFLAGS) $< | $(CC1) $(CC1FLAGS) -o $*.s
-	$(QUIET) $(AS) $(ASFLAGS) $*.s -o $*.o
+	$(QUIET) $(CPP) $(CPPFLAGS) $< | $(CC1) $(CC1FLAGS) -o - | $(AS) $(ASFLAGS) -o $*.o
 
 %.o: %.s
 	@echo 'Assembling $<'
 	$(QUIET) $(AS) $(ASFLAGS) $< -o $@
+
+# compile level into binary file
+levels/%.bin: levels/%.s levels/%.lvl.lz $(LVLCKSUM)
+	@echo 'Assembling $<'
+	$(QUIET) $(AS) $(ASFLAGS) $< -o $(<:.s=.o) && $(OBJCOPY) -O binary $(<:.s=.o) $@
+	$(LVLCKSUM) $@
+
+# binary file to C include
+%.inc.c: %.bin $(BIN2C)
+	$(BIN2C) $< gLevelData -noconst > $@
+
+$(BIN2C):    ; $(MAKE) -C $(@D)
+$(LVLCKSUM): ; $(MAKE) -C $(@D)

@@ -1,8 +1,11 @@
 *.o
 *.elf
 *.map
+*.inc.c
+*.exe
 baserom.bin
 mariovsdk-carde-18.bin
-tools/*
+tools/agbcc
+tools/bin2c/bin2c
+tools/lvlcksum/lvlcksum
 *.dump
-src/*.s
