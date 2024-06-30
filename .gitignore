@@ -5,8 +5,10 @@
 *.exe
 *.vpk
 *.bin
+*.lz
 tools/agbcc
 tools/bin2c/bin2c
+tools/gbagfx/gbagfx
 tools/lvlcksum/lvlcksum
 *.dump
 *.swp

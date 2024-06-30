@@ -21,6 +21,7 @@ OBJCOPY  := $(DEVKITARM)/bin/arm-none-eabi-objcopy
 HOSTCC   := cc
 
 BIN2C    := tools/bin2c/bin2c
+GBAGFX   := tools/gbagfx/gbagfx
 LVLCKSUM := tools/lvlcksum/lvlcksum
 NEDCMAKE := tools/nedclib/nedcmake
 NEVPK    := tools/nedclib/nevpk
@@ -50,10 +51,10 @@ dotcodes: $(DOTCODES)
 	$(NEVPK) -i $< -o $@ -c
 
 clean:
-	$(RM) $(ROMS) $(OFILES) levels/*.bin levels/*.inc.c levels/*.o *.dotcode.*.bin *.elf *.map
+	$(RM) $(ROMS) $(OFILES) levels/*.lz levels/*.bin levels/*.inc.c levels/*.o *.dotcode.*.bin *.elf *.map
 	$(MAKE) -C tools/bin2c clean
 	$(MAKE) -C tools/lvlcksum clean
-	$(RM) $(NEDCMAKE) $(NEVPK)
+	$(RM) $(BIN2C) $(GBAGFX) $(NEDCMAKE) $(NEVPK)
 
 src/code.o: levels/08-the_thwamplet.inc.c
 
@@ -86,10 +87,13 @@ levels/%.bin: levels/%.s levels/%.lvl.lz $(LVLCKSUM)
 %.inc.c: %.bin $(BIN2C)
 	$(BIN2C) $< gLevelData -noconst > $@
 
+# LZ compression
+%.lz: % $(GBAGFX)
+	$(GBAGFX) $< $@
+
 #### Tool Recipes ####
 
-$(BIN2C):    ; $(MAKE) -C $(@D)
-$(LVLCKSUM): ; $(MAKE) -C $(@D)
+$(BIN2C) $(GBAGFX) $(LVLCKSUM): ; $(MAKE) -C $(@D)
 
 NEDCMAKE_SRC := \
 	tools/nedclib/src/nedcmake.cpp \
