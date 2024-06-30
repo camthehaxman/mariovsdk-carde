@@ -1,0 +1,20 @@
+.INCLUDE "levels/macro.inc"
+
+.4byte 0                      @ checksum will go here
+.4byte level_size             @ level data size
+.byte WORLD_MARIO_TOY_CO      @ theme (background and tileset)
+.byte 0
+.byte 0
+.byte 0x09                    @ music
+.2byte level_size             @ level data size (again)
+.2byte 0x012C                 @ unknown
+level_name "Ç»Ç™Å`Ç¢Ç›ÇøÇÃÇË"
+.byte 0x20, 0x01, 0x00, 0x00  @ settings
+@ unknown data (JP only)
+.byte 0xE3, 0x81, 0xAA, 0xE3, 0x81, 0x8C, 0xEF, 0xBD, 0x9E, 0xE3, 0x81, 0x84
+.byte 0xE3, 0x81, 0xBF, 0xE3, 0x81, 0xA1, 0xE3, 0x81, 0xAE, 0xE3, 0x82, 0x8A, 0x00, 0x00, 0x00, 0x00
+.byte 0x00, 0x00, 0x00, 0x00
+
+level_begin:
+.INCBIN "levels/03-the_long_way.lvl.lz"
+level_size = . - level_begin

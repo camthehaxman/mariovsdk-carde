@@ -29,25 +29,19 @@ CC1FLAGS := -mthumb-interwork -Wimplicit -Wparentheses -O2 -fhex-asm -fno-common
 CPPFLAGS := -I tools/agbcc/include -iquote . -iquote include -nostdinc -undef
 ASFLAGS  := -mcpu=arm7tdmi -mthumb-interwork
 
-
 #### Files ####
 
-ROM      := 08-the_thwamplet-card.bin
-DOTCODE  := $(ROM:.bin=.dotcode.01.bin)
-ELF      := $(ROM:.bin=.elf)
-MAP      := $(ROM:.bin=.map)
+LEVELS   := $(wildcard levels/*.s)
+ROMS     := $(addsuffix -card.bin,$(basename $(notdir $(LEVELS))))
+DOTCODES := $(ROMS:.bin=.dotcode.01.bin)
 LDSCRIPT := ldscript.txt
-CFILES   := $(wildcard src/*.c)
-SFILES   := $(wildcard src/*.s)
-OFILES   := $(SFILES:.s=.o) $(CFILES:.c=.o)
-LEVELS   := $(wildcard levels/%.s)
 
 #### Main Targets ####
 
-compare: $(ROM)
+compare: $(ROMS)
 	$(QUIET) md5sum -c checksum.md5
 
-dotcode: $(DOTCODE)
+dotcodes: $(DOTCODES)
 
 %.dotcode.01.bin: %.vpk $(NEDCMAKE)
 	$(NEDCMAKE) -i $< -o $(<:.vpk=.dotcode) -type 2 -region 0 -bin -titlemode 2 -title 'MARIOVSDK'
@@ -56,7 +50,7 @@ dotcode: $(DOTCODE)
 	$(NEVPK) -i $< -o $@ -c
 
 clean:
-	$(RM) $(ROM) $(ELF) $(MAP) $(OFILES) levels/*.bin levels/*.inc.c levels/*.o *.dotcode.*.bin
+	$(RM) $(ROMS) $(OFILES) levels/*.bin levels/*.inc.c levels/*.o *.dotcode.*.bin *.elf *.map
 	$(MAKE) -C tools/bin2c clean
 	$(MAKE) -C tools/lvlcksum clean
 	$(RM) $(NEDCMAKE) $(NEVPK)
@@ -65,18 +59,18 @@ src/code.o: levels/08-the_thwamplet.inc.c
 
 #### Recipes ####
 
-$(ELF): $(OFILES) $(LDSCRIPT)
+%-card.elf: src/%-loader.o src/entry.o $(LDSCRIPT)
 	@echo 'Linking $@'
-	$(QUIET) $(LD) -T $(LDSCRIPT) -Map $(MAP) $(OFILES) tools/agbcc/lib/libgcc.a -o $@
+	$(QUIET) $(LD) -T $(LDSCRIPT) -Map $(@:.elf=.map) $(filter %.o,$^) tools/agbcc/lib/libgcc.a -o $@
 
 %.bin: %.elf
 	@echo 'Generating ROM $@'
 	$(QUIET) $(OBJCOPY) -O binary $< $@
 
-%.o: %.c
+src/%-loader.o: src/loader.c levels/%.inc.c
 	@echo 'Compiling $<'
 	@rm -f $@
-	$(QUIET) $(CPP) $(CPPFLAGS) $< | $(CC1) $(CC1FLAGS) -o - | $(AS) $(ASFLAGS) -o $*.o
+	$(QUIET) $(CPP) $(CPPFLAGS) -DLEVEL_DATA_INCLUDE=\"$(filter %.inc.c, $^)\" $< | $(CC1) $(CC1FLAGS) -o - | $(AS) $(ASFLAGS) -o $@
 
 %.o: %.s
 	@echo 'Assembling $<'
@@ -91,6 +85,8 @@ levels/%.bin: levels/%.s levels/%.lvl.lz $(LVLCKSUM)
 # binary file to C include
 %.inc.c: %.bin $(BIN2C)
 	$(BIN2C) $< gLevelData -noconst > $@
+
+#### Tool Recipes ####
 
 $(BIN2C):    ; $(MAKE) -C $(@D)
 $(LVLCKSUM): ; $(MAKE) -C $(@D)
@@ -114,5 +110,5 @@ NEVPK_SRC := \
 $(NEVPK): $(NEVPK_SRC)
 
 $(NEDCMAKE) $(NEVPK):
-	$(HOSTCC) -I tools/nedclib/src/lib -O2 $^ -o $@
+	$(HOSTCC) -I tools/nedclib/src/lib -O2 -std=c++11 -Wno-pointer-arith $^ -o $@
 

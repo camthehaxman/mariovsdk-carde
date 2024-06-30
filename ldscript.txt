@@ -6,24 +6,15 @@ SECTIONS
 	ALIGN(4)
 	{
 		src/entry.o(.text);
-		src/code.o(.text);
+		src/*loader.o(.text);
 		tools/agbcc/lib/libgcc.a:_call_via_rX.o(.text);
 		tools/agbcc/lib/libgcc.a:_udivsi3.o(.text);
 		tools/agbcc/lib/libgcc.a:_dvmd_tls.o(.text);
 	} = 0
 
-	.data :
-	ALIGN(4)
-	{
-		src/code.o(.rodata);
-		src/code.o(.data);
-	}
-
-	.bss (NOLOAD) :
-	ALIGN(4)
-	{
-		src/code.o(.bss);
-	}
+	.rodata (READONLY) : ALIGN(4) { *(.rodata); }
+	.data              : ALIGN(4) { *(.data); }
+	.bss    (NOLOAD)   : ALIGN(4) { *(.bss); }
 
 	gEReaderAPIEntry = 0x030075FC;
 

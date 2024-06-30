@@ -133,7 +133,7 @@ const char *gStringTable[] =
 };
 
 // Level data
-#include "levels/08-the_thwamplet.inc.c"
+#include LEVEL_DATA_INCLUDE
 
 void sub_02000260(void);
 void prepare_data_for_transfer(const void *arg0);

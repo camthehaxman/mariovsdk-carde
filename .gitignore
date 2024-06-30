@@ -4,9 +4,9 @@
 *.inc.c
 *.exe
 *.vpk
-baserom.bin
-mariovsdk-carde-18.bin
+*.bin
 tools/agbcc
 tools/bin2c/bin2c
 tools/lvlcksum/lvlcksum
 *.dump
+*.swp
