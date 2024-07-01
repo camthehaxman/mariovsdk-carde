@@ -45,7 +45,7 @@ compare: $(ROMS)
 dotcodes: $(DOTCODES)
 
 %.dotcode.01.bin: %.vpk $(NEDCMAKE)
-	$(NEDCMAKE) -i $< -o $(<:.vpk=.dotcode) -type 2 -region 0 -bin -titlemode 2 -title 'MARIOVSDK'
+	$(NEDCMAKE) -i $< -o $(<:.vpk=.dotcode) -type 2 -region 1 -bin -titlemode 2 -title 'MARIOVSDK'
 
 %.vpk: %.bin $(NEVPK)
 	$(NEVPK) -i $< -o $@ -c

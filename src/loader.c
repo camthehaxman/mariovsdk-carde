@@ -81,55 +81,42 @@ u16 gBlackWhitePalette[16] = { 0, 0x7FFF };
 u8 gUnknown_02000D68[] = { 5, 6, 6, 7, 8, 7 };
 u8 gUnknown_02000D6E[] = { 0, 0, 0, 0, 4, 0 };
 
-const char strMarioVsDonkeyKongCardEPlus[] = "マリオ　ｖｓ．　ドンキーコング　カードｅ＋";
-const char strMarioVsDonkeyKong[] = "マリオ　ｖｓ．　ドンキーコング";
+const char strMarioVsDonkeyKongCardEPlus[] = "Mario Vs. Donkey Kong Card-E+";
+const char strMarioVsDonkeyKong[] = "Mario Vs. Donkey Kong";
 const char unusedString[] = "MultiSio010918";
 
 const char *gStringTable[] =
 {
-    // Is now available.
-    // Link e-Reader to Mario vs. Donkey Kong
-    // and select the e-reader card Menu
-    // then select ADD LEVEL to begin.
-    // Press B Button to Cancel.
-    "そうしんのよういができました。\n\n"
-    "カードｅリーダー＋がささっているゲームボーイアドバン\n"
-    "スと、マリオｖｓ．ドンキーコングのカートリッジがささ\n"
-    "っているゲームボーイアドバンスを、つうしんケーブルで\n"
-    "つなぎ、メニューで「ステージをついか」をえらんでスタ\n"
-    "ートさせてください。\nＢボタンをおすとキャンセルします。\n",
-
-    // Is now available.
-    // Link e-Reader to Mario vs. Donkey Kong
-    // and select the e-reader card Menu
-    // then select ADD LEVEL to begin.
-    // Press B Button to Cancel.
-    "そうしんのよういができました。\n\n"
-    "カードｅリーダー＋がささっているゲームボーイアドバン\n"
-    "スと、マリオｖｓ．ドンキーコングのカートリッジがささ\n"
-    "っているゲームボーイアドバンスを、つうしんケーブルで\n"
-    "つなぎ、メニューで「ステージをついか」をえらんでスタ\n"
-    "ートさせてください。\nＢボタンをおすとキャンセルします。\n",
-
-    // Is now available.
-    // Communication in progress.
-    "そうしんのよういができました。\n\n"
-    "つうしんたいきちゅう。",
-
-    // Sending...
-    // Do not turn off the GBA or unplug the link cable.
-    "そうしんちゅう。\n\n"
-    "ゲームボーイアドバンスのでんげんをきったり、つうしん\n"
-    "ケーブルをぬいたりしないでください。",
-
-    // Transmission complete.
-    "そうしんかんりょう。\n\n"
-    "Ａボタンをおすともういちどそうしんします。\n"
-    "Ｂボタンをおすとキャンセルします。",
-
-    "そうしんちゅう。\n\n"
-    "ゲームボーイアドバンスのでんげんをきったり、つうしん\n"
-    "ケーブルをぬいたりしないでください。",
+    "Is now available.\n\n"
+    "Link e-Reader to Mario vs. Donkey Kong\n"
+    "and select the e-Reader card Menu\n"
+    "then select ADD LEVEL to begin.\n\n"
+    "Press B Button to Cancel.\n",
+    
+    "Is now available.\n\n"
+    "Link e-Reader to Mario vs. Donkey Kong\n"
+    "and select the e-Reader card Menu\n"
+    "then select ADD LEVEL to begin.\n\n"
+    "Press B Button to Cancel.\n",
+    
+    "Is ready to send.\n\n"
+    "Press the A Button on the GBA with\n"
+    "Mario vs. Donkey Kong to begin\n"
+    "sending the level.",
+    
+    "Sending...\n\n"
+    "Please DO NOT TURN OFF\n"
+    "Game Boy Advance Systems or Disconnect\n"
+    "the Game Boy Advance Game Link cable.",
+    
+    "Level has been sent!\n\n"
+    "Press A Button to Resend.\n"
+    "Press B Button to Cancel.",
+    
+    "Sending...\n\n"
+    "Please DO NOT TURN OFF\n"
+    "Game Boy Advance Systems or Disconnect the\n"
+    "Game Boy Advance Game Link cable.",
 };
 
 // Level data
